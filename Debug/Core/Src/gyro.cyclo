@@ -1,0 +1,2 @@
+../Core/Src/gyro.c:10:9:gyroInit	10
+../Core/Src/gyro.c:78:6:readGyro	2
