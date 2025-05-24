@@ -56,6 +56,7 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 I2C_HandleTypeDef* Get_I2C1_Ptr(void);
+ADC_HandleTypeDef* Get_HADC1_Ptr(void);
 void interruptRoutine();
 
 /* USER CODE END EFP */

@@ -61,7 +61,13 @@ GPIO_PinState S1, S2, S3, S4, B1, B2;
 int16_t left_counts = 0;
 int16_t right_counts = 0;
 int temp = 0;
+int temp2 = 0;
+int temp3 = 0;
 int gyro_inited = 0;
+// This is the buffer that will get filled up with all the measurements
+uint32_t adc_buf[4];
+// "boolean" variable to keep say when the ADC has finished filling up the buffer
+uint8_t complete = 0;
 float gyro_v = 0;
 float gyro_a = 0;
 /* USER CODE END PV */
@@ -85,9 +91,11 @@ static void MX_TIM10_Init(void);
 /* USER CODE BEGIN 0 */
 void interruptRoutine() {
 	delayMicroseconds(100);
+
 	temp++;
 	left_counts = getLeftEncoderCounts();
 	right_counts = getRightEncoderCounts();
+
 	if (gyro_inited) {
 		updatePID();
 //		readGyro(&gyro_v);
@@ -152,6 +160,8 @@ int main(void)
   // Interrupt Timer
   HAL_TIM_Base_Start_IT(&htim7);
 
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, 4);
+
 
   delayMicroseconds(1000);
 
@@ -164,6 +174,33 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+//
+//	  //	ADC Testing
+//	  	ADC_ChannelConfTypeDef sConfig = {0}; //this initializes the IR ADC [Analog to Digital Converter]
+//	  	ADC_HandleTypeDef *hadc1_ptr = Get_HADC1_Ptr(); //this is a pointer to your hal_adc
+//	  	//this pointer will also be used to read the analog value, val = HAL_ADC_GetValue(hadc1_ptr);
+//
+//	  	sConfig.Channel = ADC_CHANNEL_5;
+//	  	sConfig.Rank = 1;
+//	  	sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+//
+//	  	// make sure everything was set up correctly
+//	  	if (HAL_ADC_ConfigChannel(hadc1_ptr, &sConfig) != HAL_OK)
+//	  	{
+//	  		temp2 = -1;
+//	  	}
+//
+//	  	complete = 0;
+//
+//	  	// start filling up the ADC buffer
+//	  	HAL_ADC_Start_DMA(hadc1_ptr, (uint32_t*)adc_buf, 5);
+//
+//	  	// wait for the buffer to become full
+//	  	while (complete == 0)
+//	  	{
+//	  		continue;
+//	  	}
+
 	B1 = HAL_GPIO_ReadPin(Button1_GPIO_Port, Button1_Pin);
 	B2 = HAL_GPIO_ReadPin(Button2_GPIO_Port, Button2_Pin);
 
@@ -246,13 +283,13 @@ static void MX_ADC1_Init(void)
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc1.Init.ScanConvMode = DISABLE;
+  hadc1.Init.ScanConvMode = ENABLE;
   hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.NbrOfConversion = 4;
   hadc1.Init.DMAContinuousRequests = ENABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
@@ -265,6 +302,33 @@ static void MX_ADC1_Init(void)
   sConfig.Channel = ADC_CHANNEL_5;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_6;
+  sConfig.Rank = 2;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_10;
+  sConfig.Rank = 3;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_11;
+  sConfig.Rank = 4;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -652,6 +716,12 @@ ADC_HandleTypeDef* Get_HADC1_Ptr(void)
 I2C_HandleTypeDef* Get_I2C1_Ptr(void)
 {
 	return &hi2c1;
+}
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
+
+    complete = 1;
+    temp3++;
 }
 /* USER CODE END 4 */
 
