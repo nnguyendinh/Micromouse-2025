@@ -256,6 +256,8 @@ int main(void)
 //		frontCorrection();
 		move(90 - 34.5);
 
+//		move(180);
+
 //		move(180 * 3);
 //		turn(90);
 //		turn(90);

@@ -246,13 +246,13 @@ void resetPID() {
 //	goal_distance = 0;
 	goal_reached_timer = 0;
 
-//	resetEncoders();
 
 
-	if (getLeftEncoderCounts() > 60000 || getRightEncoderCounts() > 60000) {
-		resetEncoders();
-		goal_distance = 0;
-	}
+//	TIM3->CNT = TIM3->CNT + goal_distance;
+//	TIM8->CNT = TIM8->CNT + goal_distance;
+	goal_distance = 0;
+
+	resetEncoders();
 
 	resetMotors();
 	setState(REST);
