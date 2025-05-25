@@ -12,6 +12,7 @@ typedef enum
 	MOVING = 1,
 	TURNING = 2,
 	FRONTING = 3,
+	START = 4,
 }STATE;
 
 #define ENC_TO_MM 3.4 // 3.38

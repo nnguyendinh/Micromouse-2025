@@ -104,6 +104,8 @@ void interruptRoutine();
 #define RightEncoderCh1_GPIO_Port GPIOB
 #define RightEncoderCh2_Pin GPIO_PIN_5
 #define RightEncoderCh2_GPIO_Port GPIOB
+#define Switch4_Pin GPIO_PIN_8
+#define Switch4_GPIO_Port GPIOB
 #define ForwardRightEmitter_Pin GPIO_PIN_9
 #define ForwardRightEmitter_GPIO_Port GPIOB
 

@@ -83,6 +83,11 @@ uint32_t temp_front_left = 0;
 uint32_t temp_front_right = 0;
 uint32_t temp_ir_right = 0;
 
+// Misc
+uint8_t max_forward = 10;
+
+int test_dist = 180;
+
 
 /* USER CODE END PV */
 
@@ -124,15 +129,15 @@ void solve(Algorithm alg) {
 			if (alg == FLOODFILL)
 			{
 //				TODO
-//				int extra_moves = foresight(); // Already has curr position and heading
-//				if (extra_moves > max_forward) {
-//					extra_moves = max_forward;
-//				}
-//				for (int i = 0; i < extra_moves; i++)
-//				{
-//					solver(FLOODFILL);
-//				}
-//				move(1 + extra_moves);
+				int extra_moves = foresight(); // Already has curr position and heading
+				if (extra_moves > max_forward) {
+					extra_moves = max_forward;
+				}
+				for (int i = 0; i < extra_moves; i++)
+				{
+					solver(FLOODFILL);
+				}
+				move(180 + 180 * extra_moves);
 			}
 			else
 				move(180);
@@ -228,6 +233,10 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
+	S1 = HAL_GPIO_ReadPin(Button1_GPIO_Port, Switch1_Pin);
+	S2 = HAL_GPIO_ReadPin(Switch2_GPIO_Port, Switch2_Pin);
+	S3 = HAL_GPIO_ReadPin(Switch3_GPIO_Port, Switch3_Pin);
+	S4 = HAL_GPIO_ReadPin(Switch4_GPIO_Port, Switch4_Pin);
 	B1 = HAL_GPIO_ReadPin(Button1_GPIO_Port, Button1_Pin);
 	B2 = HAL_GPIO_ReadPin(Button2_GPIO_Port, Button2_Pin);
 
@@ -236,27 +245,26 @@ int main(void)
 		gyroInit();
 		gyro_inited = 1;
 		setIRGoals(ir_front_left, ir_front_right, ir_left, ir_right);
+		setState(START);
 	}
 
 	if (B2 == GPIO_PIN_SET) {
 		start = 1;
+		move(90 - 32.5);
+
+//		move(180 * 3);
 //		turn(90);
-		move(180);
-		move(180);
-		move(180);
-		move(180);
-		turn(90);
-		turn(90);
-		move(180);
-		move(180);
-		move(180);
-		move(180);
-		turn(-90);
-		turn(-90);
+//		turn(90);
+//		move(180);
+//		move(180);
+//		move(180);
+//		turn(-90);
+//		turn(-90);
+//		move(test_dist);
 	}
 
 	if (start) {
-//		solve(DEAD);
+		solve(FLOODFILL);
 
 	}
 
@@ -719,8 +727,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
   HAL_GPIO_Init(Buzzer_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Button2_Pin Button1_Pin */
-  GPIO_InitStruct.Pin = Button2_Pin|Button1_Pin;
+  /*Configure GPIO pins : Button2_Pin Button1_Pin Switch4_Pin */
+  GPIO_InitStruct.Pin = Button2_Pin|Button1_Pin|Switch4_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);

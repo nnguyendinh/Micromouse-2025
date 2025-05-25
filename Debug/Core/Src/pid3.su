@@ -4,6 +4,6 @@
 ../Core/Src/pid3.c:84:6:setIRGoals	16	static
 ../Core/Src/pid3.c:95:6:setIRAngle	24	static
 ../Core/Src/pid3.c:113:6:PDController	24	static
-../Core/Src/pid3.c:163:6:updatePID	16	static
-../Core/Src/pid3.c:208:8:PIDdone	8	static
-../Core/Src/pid3.c:220:6:resetPID	16	static
+../Core/Src/pid3.c:167:6:updatePID	16	static
+../Core/Src/pid3.c:214:8:PIDdone	8	static
+../Core/Src/pid3.c:226:6:resetPID	16	static

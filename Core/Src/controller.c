@@ -10,12 +10,15 @@
 
 #include <math.h>
 
+float constant = 1.01;
+float constant2 = 50000;
+
 
 void move(int16_t mm) {	// Make n 90 degree turns (no acceleration)
 
 
 	resetPID();
-	setPIDGoalD(mm * 0.97);
+	setPIDGoalD(mm * constant + (mm * mm / constant2));
 	setPIDGoalA(0);
 
 	setState(MOVING);

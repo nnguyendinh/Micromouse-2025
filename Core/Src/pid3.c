@@ -12,17 +12,17 @@
 #include "irs.h"
 
 // Constants
-float kPw = 0.02; // 0.04
+float kPw = 0.02; // 0.02
 float kDw = 0.3;
-float kPx = 0.015;
-float kDx = 0.015;
+float kPx = 0.02; // 0.015
+float kDx = 1.5; // 1.5
 
-const float PWMMaxx = 0.3; // 0.65
-const float PWMMaxw = 0.16;	//0.35
+const float PWMMaxx = 0.3; // 0.3
+const float PWMMaxw = 0.16;	//0.16
 
-const float PWMMinx = 0.25;	// 0.32
-const float PWMMinw = 0.25;	// 0.32
-const float PWMMin = 0.23;	// 0.28
+const float PWMMinx = 0.25;	// 0.25
+const float PWMMinw = 0.25;	// 0.25
+const float PWMMin = 0.23;	// 0.23
 
 const float xacceleration = 0.0005;
 
@@ -58,7 +58,7 @@ int16_t goal_right;
 float adjusted_angle;
 
 // Fronting
-const float front_kPx = 0.0003; // 0.3
+const float front_kPx = 0.0002; // 0.3
 const float front_kPw = 0.35; // 0.2
 
 // Miscellaneous
@@ -71,7 +71,7 @@ float gyro_angle = 0;
 float gyro_vel = 0;
 
 void setPIDGoalD(int16_t distance) {
-	goal_distance = distance;
+	goal_distance += distance;
 }
 void setPIDGoalA(int16_t angle) {
 	goal_angle += angle;
@@ -111,6 +111,10 @@ void setIRAngle(float left, float right){
 }
 
 void PDController() {
+
+	if (state == START) {
+		return;
+	}
 
 //////////////////////////	CALCULATE DISTANCE AND ANGLE CORRECTION /////////////////////////
 
@@ -183,7 +187,7 @@ void updatePID() {
 	setMotorLPWM(left_PWM_value);
 	setMotorRPWM(right_PWM_value);
 
-	if((angle_error < 2 && angle_error > -2 && distance_error < 2 && distance_error > -2) || (state == FRONTING && distance_correction < 0.03 && distance_correction > -0.03))
+	if((angle_error < 2 && angle_error > -2 && distance_error < 1.5 && distance_error > -1.5) || (state == FRONTING && distance_correction < 0.04 && distance_correction > -0.04))
 		goal_reached_timer++;					// Increments goal reached timer when errors are within a certain threshold
 
 	else
@@ -192,6 +196,8 @@ void updatePID() {
 ///////////////////// UPDATE PREVIOUS ANGLE AND DISTANCE ERRORS //////////////////////////
 
 	old_angle_error = angle_error;
+
+	old_distance_error = distance_error;
 
 	old_distance_correction = distance_correction;
 
@@ -237,10 +243,17 @@ void resetPID() {
 ////////////// 	RESET ALL GOALS AND ENCODER COUNTS TO 0 	///////////////////
 //	goal_angle = 0;
 //	gyro_angle = 0;
-	goal_distance = 0;
+//	goal_distance = 0;
 	goal_reached_timer = 0;
 
-	resetEncoders();
+//	resetEncoders();
+
+
+	if (getLeftEncoderCounts() > 60000 || getRightEncoderCounts() > 60000) {
+		resetEncoders();
+		goal_distance = 0;
+	}
+
 	resetMotors();
 	setState(REST);
 }
