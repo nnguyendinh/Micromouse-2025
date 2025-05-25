@@ -36,7 +36,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define IR_SAMPLES 256
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -57,19 +57,29 @@ TIM_HandleTypeDef htim8;
 TIM_HandleTypeDef htim10;
 
 /* USER CODE BEGIN PV */
+
+// User Interface
 GPIO_PinState S1, S2, S3, S4, B1, B2;
+
+// Encoders
 int16_t left_counts = 0;
 int16_t right_counts = 0;
-int temp = 0;
-int temp2 = 0;
-int temp3 = 0;
-int gyro_inited = 0;
-// This is the buffer that will get filled up with all the measurements
-uint32_t adc_buf[4];
-// "boolean" variable to keep say when the ADC has finished filling up the buffer
-uint8_t complete = 0;
-float gyro_v = 0;
-float gyro_a = 0;
+
+// IRs
+float ir_left, ir_front_left, ir_front_right, ir_right;
+uint32_t adc_buf[IR_SAMPLES * 4];
+
+// Gyro
+uint8_t gyro_inited = 0;
+
+// Temps
+uint32_t temp_tick = 0;
+uint32_t temp_adc = 0;
+
+uint32_t temp_left = 0;
+uint32_t temp_front_left = 0;
+uint32_t temp_front_right = 0;
+uint32_t temp_ir_right = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -90,17 +100,53 @@ static void MX_TIM10_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 void interruptRoutine() {
-	delayMicroseconds(100);
+//	delayMicroseconds(100);
 
-	temp++;
+	temp_tick++;
 	left_counts = getLeftEncoderCounts();
 	right_counts = getRightEncoderCounts();
 
 	if (gyro_inited) {
 		updatePID();
-//		readGyro(&gyro_v);
-//		gyro_v /= 1000;
-//		gyro_a += gyro_v;
+	}
+}
+
+void solve(Algorithm alg) {
+	Action nextMove = solver(alg);
+	switch(nextMove) {
+		case FORWARD:
+//			move(0);
+//			move(1);
+			if (alg == FLOODFILL)
+			{
+				int extra_moves = foresight(); // Already has curr position and heading
+				if (extra_moves > max_forward) {
+					extra_moves = max_forward;
+				}
+				for (int i = 0; i < extra_moves; i++)
+				{
+					solver(FLOODFILL);
+				}
+				move(1 + extra_moves);
+			}
+			else
+				move(1);
+			break;
+		case LEFT:
+			displayFace(goodright);
+			move(0);
+			turn(-1);
+			break;
+		case RIGHT:
+			displayFace(goodleft);
+			move(0);
+			turn(1);
+			break;
+		case IDLE:
+			break;
+	}
+	if (readIR(IR_FORWARD_LEFT) > 1200 && readIR(IR_FORWARD_RIGHT) > 1200) {
+		frontCorrection();
 	}
 }
 /* USER CODE END 0 */
@@ -160,10 +206,12 @@ int main(void)
   // Interrupt Timer
   HAL_TIM_Base_Start_IT(&htim7);
 
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, 4);
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buf, IR_SAMPLES * 4);
 
-
-  delayMicroseconds(1000);
+  HAL_GPIO_WritePin(ForwardLeftEmitter_GPIO_Port, ForwardLeftEmitter_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(LeftEmitter_GPIO_Port, LeftEmitter_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(RightEmitter_GPIO_Port, RightEmitter_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(ForwardRightEmitter_GPIO_Port, ForwardRightEmitter_Pin, GPIO_PIN_SET);
 
   /* USER CODE END 2 */
 
@@ -174,32 +222,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//
-//	  //	ADC Testing
-//	  	ADC_ChannelConfTypeDef sConfig = {0}; //this initializes the IR ADC [Analog to Digital Converter]
-//	  	ADC_HandleTypeDef *hadc1_ptr = Get_HADC1_Ptr(); //this is a pointer to your hal_adc
-//	  	//this pointer will also be used to read the analog value, val = HAL_ADC_GetValue(hadc1_ptr);
-//
-//	  	sConfig.Channel = ADC_CHANNEL_5;
-//	  	sConfig.Rank = 1;
-//	  	sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-//
-//	  	// make sure everything was set up correctly
-//	  	if (HAL_ADC_ConfigChannel(hadc1_ptr, &sConfig) != HAL_OK)
-//	  	{
-//	  		temp2 = -1;
-//	  	}
-//
-//	  	complete = 0;
-//
-//	  	// start filling up the ADC buffer
-//	  	HAL_ADC_Start_DMA(hadc1_ptr, (uint32_t*)adc_buf, 5);
-//
-//	  	// wait for the buffer to become full
-//	  	while (complete == 0)
-//	  	{
-//	  		continue;
-//	  	}
 
 	B1 = HAL_GPIO_ReadPin(Button1_GPIO_Port, Button1_Pin);
 	B2 = HAL_GPIO_ReadPin(Button2_GPIO_Port, Button2_Pin);
@@ -211,7 +233,7 @@ int main(void)
 	}
 
 	if (B2 == GPIO_PIN_SET) {
-//		move(180);
+		move(180);
 		turn(-90);
 	}
 
@@ -281,7 +303,7 @@ static void MX_ADC1_Init(void)
   /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
   */
   hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV8;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.ScanConvMode = ENABLE;
   hadc1.Init.ContinuousConvMode = ENABLE;
@@ -720,8 +742,25 @@ I2C_HandleTypeDef* Get_I2C1_Ptr(void)
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
 
-    complete = 1;
-    temp3++;
+	temp_left = 0;
+	temp_front_left = 0;
+	temp_front_right = 0;
+	temp_ir_right = 0;
+
+    for (int i = 0; i < IR_SAMPLES * 4; i = i + 4) {
+    	temp_left += adc_buf[i];
+    	temp_front_left += adc_buf[i+1];
+    	temp_front_right += adc_buf[i+2];
+    	temp_ir_right += adc_buf[i+3];
+    }
+
+    ir_left = temp_left / IR_SAMPLES;
+    ir_front_left = temp_front_left / IR_SAMPLES;
+    ir_front_right = temp_front_right / IR_SAMPLES;
+    ir_right = temp_ir_right / IR_SAMPLES;
+
+    temp_adc++;
+
 }
 /* USER CODE END 4 */
 

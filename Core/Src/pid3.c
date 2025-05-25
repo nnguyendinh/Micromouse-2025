@@ -11,16 +11,17 @@
 #include "utility.h"
 
 // Constants
-const float kPw = 0.01;
-const float kDw = 0.0;
-const float kPx = 0.005;
+const float kPw = 0.04;
+const float kDw = 0.01;
+const float kPx = 0.015;
 const float kDx = 0.0;
 
-const float PWMMaxx = 0.65; // 0.65
-const float PWMMaxw = 0.4;	//0.35
+const float PWMMaxx = 0.35; // 0.65
+const float PWMMaxw = 0.1;	//0.35
+
 const float PWMMinx = 0.32;	// 0.32
-const float PWMMinw = 0.32;	// 0.32
-const float PWMMin = 0.3;	// 0.28
+const float PWMMinw = 0.25;	// 0.32
+const float PWMMin = 0.25;	// 0.28
 
 const float xacceleration = 0.001;
 
@@ -88,20 +89,20 @@ void PDController() {
 		}
 	}
 
-////////////////////// ROUND DISTANCE OR ANGLE CORRECTION	//////////////////////////
+////////////////////// ROUND DISTANCE AND ANGLE CORRECTION	//////////////////////////
 
-	switch(state) {		// Apply lower limits of PWM for various states
-		case MOVING:
-			if (fabs(distance_correction) > 0.01 && fabs(distance_correction) < PWMMinx)
-				distance_correction = sign(distance_correction) * PWMMinx;
-			break;
-		case TURNING:
-			if (fabs(angle_correction) > 0.01 && fabs(angle_correction) < PWMMinw)
-				angle_correction = sign(angle_correction) * PWMMinw;
-			break;
-		default:
-			break;
-	}
+//	switch(state) {		// Apply lower limits of PWM for various states
+//		case MOVING:
+//			if (fabs(distance_correction) > 0.01 && fabs(distance_correction) < PWMMinx)
+//				distance_correction = sign(distance_correction) * PWMMinx;
+//			break;
+//		case TURNING:
+//			if (fabs(angle_correction) > 0.01 && fabs(angle_correction) < PWMMinw)
+//				angle_correction = sign(angle_correction) * PWMMinw;
+//			break;
+//		default:
+//			break;
+//	}
 
 	if (fabs(distance_correction) > PWMMaxx)		// Upper Limit for PWM
 		distance_correction = sign(distance_correction) * PWMMaxx;
@@ -123,32 +124,42 @@ void updatePID() {
 	PDController();
 
 ////////////////////	NORMALIZE LEFT AND RIGHT PWM VALUES ////////////////
+//
+//	// If we are kinda seriously trying to move)
+//	if (fabs(left_PWM_value) > 0.01 || fabs(right_PWM_value) > 0.01) {
+//
+//		// If the left PWM is greater than the right, need left PWM to be higher than the minimum
+//		if (state == MOVING && fabs(left_PWM_value) > fabs(right_PWM_value) && fabs(right_PWM_value) < PWMMin) {
+//			left_PWM_value += sign(right_PWM_value) * (PWMMin - fabs(right_PWM_value));
+//			right_PWM_value = sign(right_PWM_value) * PWMMin;
+//		}
+//
+//		// If the right PWM is greater than the left, need right PWM to be higher than the minimum
+//		else if (state == MOVING && fabs(right_PWM_value) > fabs(left_PWM_value) && fabs(left_PWM_value) < PWMMin) {
+//			right_PWM_value += sign(left_PWM_value) * (PWMMin - fabs(left_PWM_value));
+//			left_PWM_value = sign(left_PWM_value) * PWMMin;
+//		}
+//
+//		// If not moving, apply regular basic limits
+//		else {
+//			if (fabs(left_PWM_value) < PWMMin){
+//				left_PWM_value = sign(left_PWM_value) * PWMMin;
+//			}
+//
+//			if (fabs(right_PWM_value) < PWMMin){
+//				right_PWM_value = sign(right_PWM_value) * PWMMin;
+//			}
+//		}
+//	}
 
-	// If we are kinda seriously trying to move)
-	if (fabs(left_PWM_value) > 0.01 || fabs(right_PWM_value) > 0.01) {
+	if (fabs(left_PWM_value) > 0.03) {
+		left_PWM_value += sign(left_PWM_value) * PWMMin;
 
-		// If the left PWM is greater than the right, need left PWM to be higher than the minimum
-		if (state == MOVING && fabs(left_PWM_value) > fabs(right_PWM_value) && fabs(right_PWM_value) < PWMMin) {
-			left_PWM_value += sign(right_PWM_value) * (PWMMin - fabs(right_PWM_value));
-			right_PWM_value = sign(right_PWM_value) * PWMMin;
-		}
+	}
 
-		// If the right PWM is greater than the left, need right PWM to be higher than the minimum
-		else if (state == MOVING && fabs(right_PWM_value) > fabs(left_PWM_value) && fabs(left_PWM_value) < PWMMin) {
-			right_PWM_value += sign(left_PWM_value) * (PWMMin - fabs(left_PWM_value));
-			left_PWM_value = sign(left_PWM_value) * PWMMin;
-		}
+	if (fabs(right_PWM_value) > 0.03) {
+		right_PWM_value += sign(right_PWM_value) * PWMMin;
 
-		// If not moving, apply regular basic limits
-		else {
-			if (fabs(left_PWM_value) < PWMMin){
-				left_PWM_value = sign(left_PWM_value) * PWMMin;
-			}
-
-			if (fabs(right_PWM_value) < PWMMin){
-				right_PWM_value = sign(right_PWM_value) * PWMMin;
-			}
-		}
 	}
 
 //////////////////	SET PWM VALUES AND CHECK FOR GOAL REACHED ////////////////////////
@@ -156,7 +167,7 @@ void updatePID() {
 	setMotorLPWM(left_PWM_value);
 	setMotorRPWM(right_PWM_value);
 
-	if(angle_error < 1 && angle_error > -1 && distance_error < 2 && distance_error > -2)
+	if(angle_error < 2 && angle_error > -2 && distance_error < 2 && distance_error > -2)
 		goal_reached_timer++;					// Increments goal reached timer when errors are within a certain threshold
 
 	else
