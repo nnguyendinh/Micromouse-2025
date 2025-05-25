@@ -99,7 +99,7 @@ void readGyro(/*float* Gx , float* Gy, */float* Gz) {
 //    *Gx = Gyro_X_RAW/131.0 - Gx_offset;
 //    *Gy = Gyro_Y_RAW/131.0 - Gy_offset;
 //    *Gz = Gyro_Z_RAW/65.5f - Gz_offset;
-    *Gz = Gyro_Z_RAW/66.0f - Gz_offset;
+    *Gz = Gyro_Z_RAW/65.8f - Gz_offset;
 
     return;
 }

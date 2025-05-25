@@ -1,0 +1,12 @@
+../Core/Src/solver.c:28:14:newCell	1
+../Core/Src/solver.c:36:6:insertQueue	2
+../Core/Src/solver.c:47:6:popQueueFront	2
+../Core/Src/solver.c:58:14:queueFront	1
+../Core/Src/solver.c:63:6:initElements	8
+../Core/Src/solver.c:95:6:setWall	5
+../Core/Src/solver.c:114:6:detectWalls	17
+../Core/Src/solver.c:179:6:recalculate	17
+../Core/Src/solver.c:253:8:solver	3
+../Core/Src/solver.c:267:8:deadReckoning	3
+../Core/Src/solver.c:282:8:floodFill	28
+../Core/Src/solver.c:390:5:foresight	23

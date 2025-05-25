@@ -29,7 +29,7 @@ Core/Src/pid3.o: ../Core/Src/pid3.c ../Core/Inc/pid3.h ../Core/Inc/main.h \
  ../Drivers/STM32F2xx_HAL_Driver/Inc/stm32f2xx_hal_tim.h \
  ../Drivers/STM32F2xx_HAL_Driver/Inc/stm32f2xx_hal_tim_ex.h \
  ../Core/Inc/main.h ../Core/Inc/motors.h ../Core/Inc/encoders.h \
- ../Core/Inc/gyro.h ../Core/Inc/utility.h
+ ../Core/Inc/gyro.h ../Core/Inc/utility.h ../Core/Inc/irs.h
 ../Core/Inc/pid3.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F2xx_HAL_Driver/Inc/stm32f2xx_hal.h:
@@ -66,3 +66,4 @@ Core/Src/pid3.o: ../Core/Src/pid3.c ../Core/Inc/pid3.h ../Core/Inc/main.h \
 ../Core/Inc/encoders.h:
 ../Core/Inc/gyro.h:
 ../Core/Inc/utility.h:
+../Core/Inc/irs.h:

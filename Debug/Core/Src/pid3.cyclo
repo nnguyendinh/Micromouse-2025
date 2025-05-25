@@ -1,7 +1,9 @@
-../Core/Src/pid3.c:54:6:setPIDGoalD	1
-../Core/Src/pid3.c:57:6:setPIDGoalA	1
-../Core/Src/pid3.c:61:6:setState	1
-../Core/Src/pid3.c:65:6:PDController	5
-../Core/Src/pid3.c:118:6:updatePID	9
-../Core/Src/pid3.c:190:8:PIDdone	2
-../Core/Src/pid3.c:202:6:resetPID	3
+../Core/Src/pid3.c:67:6:setPIDGoalD	1
+../Core/Src/pid3.c:70:6:setPIDGoalA	1
+../Core/Src/pid3.c:74:6:setState	1
+../Core/Src/pid3.c:78:6:setIRGoals	1
+../Core/Src/pid3.c:89:6:setIRAngle	8
+../Core/Src/pid3.c:107:6:PDController	5
+../Core/Src/pid3.c:149:6:updatePID	9
+../Core/Src/pid3.c:192:8:PIDdone	2
+../Core/Src/pid3.c:204:6:resetPID	3

@@ -27,6 +27,7 @@
 #include "delay.h"
 #include "controller.h"
 #include "pid3.h"
+#include "solver.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -73,6 +74,7 @@ uint32_t adc_buf[IR_SAMPLES * 4];
 uint8_t gyro_inited = 0;
 
 // Temps
+uint8_t start = 0;
 uint32_t temp_tick = 0;
 uint32_t temp_adc = 0;
 
@@ -119,33 +121,34 @@ void solve(Algorithm alg) {
 //			move(1);
 			if (alg == FLOODFILL)
 			{
-				int extra_moves = foresight(); // Already has curr position and heading
-				if (extra_moves > max_forward) {
-					extra_moves = max_forward;
-				}
-				for (int i = 0; i < extra_moves; i++)
-				{
-					solver(FLOODFILL);
-				}
-				move(1 + extra_moves);
+//				TODO
+//				int extra_moves = foresight(); // Already has curr position and heading
+//				if (extra_moves > max_forward) {
+//					extra_moves = max_forward;
+//				}
+//				for (int i = 0; i < extra_moves; i++)
+//				{
+//					solver(FLOODFILL);
+//				}
+//				move(1 + extra_moves);
 			}
 			else
-				move(1);
+				move(180);
 			break;
 		case LEFT:
-			displayFace(goodright);
-			move(0);
-			turn(-1);
+//			displayFace(goodright);
+//			move(0);
+			turn(-90);
 			break;
 		case RIGHT:
-			displayFace(goodleft);
-			move(0);
-			turn(1);
+//			displayFace(goodleft);
+//			move(0);
+			turn(90);
 			break;
 		case IDLE:
 			break;
 	}
-	if (readIR(IR_FORWARD_LEFT) > 1200 && readIR(IR_FORWARD_RIGHT) > 1200) {
+	if (ir_front_left > 1200 && ir_front_right > 1200) {
 		frontCorrection();
 	}
 }
@@ -230,12 +233,19 @@ int main(void)
 	if (B1 == GPIO_PIN_SET) {
 		gyroInit();
 		gyro_inited = 1;
+		setIRGoals(ir_front_left, ir_front_right, ir_left, ir_right);
 	}
 
 	if (B2 == GPIO_PIN_SET) {
-		move(180);
-		turn(-90);
+		solve(DEAD);
+		start = 1;
 	}
+
+	if (start) {
+
+	}
+
+
 
   }
   /* USER CODE END 3 */

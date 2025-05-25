@@ -1,2 +1,3 @@
 ../Core/Src/controller.c:14:6:move	2
 ../Core/Src/controller.c:31:6:turn	2
+../Core/Src/controller.c:48:6:frontCorrection	1
