@@ -156,7 +156,9 @@ void solve(Algorithm alg) {
 			break;
 	}
 	if (ir_front_left > 1200 && ir_front_right > 1200) {
+		delayMicroseconds(10000);
 		frontCorrection();
+		delayMicroseconds(10000);
 	}
 }
 /* USER CODE END 0 */
@@ -250,7 +252,9 @@ int main(void)
 
 	if (B2 == GPIO_PIN_SET) {
 		start = 1;
-		move(90 - 32.5);
+
+//		frontCorrection();
+		move(90 - 34.5);
 
 //		move(180 * 3);
 //		turn(90);

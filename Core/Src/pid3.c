@@ -12,7 +12,7 @@
 #include "irs.h"
 
 // Constants
-float kPw = 0.02; // 0.02
+float kPw = 0.015; // 0.02
 float kDw = 0.3;
 float kPx = 0.02; // 0.015
 float kDx = 1.5; // 1.5
@@ -44,8 +44,8 @@ float distance_correction = 0;
 float old_distance_correction = 0;
 
 // IR Adjustments
-float kPir = 0.01;		// 0.03	for 2 walls
-float kPir2 = 0.015;		// 0.05 for 1 wall
+float kPir = 0.01;		// 0.01	for 2 walls
+float kPir2 = 0.015;		// 0.015 for 1 wall
 
 float IRadjustment = 0;
 
@@ -94,15 +94,15 @@ void setIRGoals(int16_t front_left_goal, int16_t front_right_goal, int16_t left_
 // TODO: CHANGE TO USE WALL CHECK FUNCTIONS
 void setIRAngle(float left, float right){
 
-	if (left > 600 && right > 600 && goal_angle == 0)
+	if (left > 600 && right > 600 && state == MOVING)
 	{
 		IRadjustment = (kPir * ((left - right) - IRAngleOffset));
 	}
-	else if (left > 600 && goal_angle == 0)
+	else if (left > 600 && state == MOVING)
 	{
 		IRadjustment = (kPir2 * (left - goal_left));
 	}
-	else if (right > 600 && goal_angle == 0)
+	else if (right > 600 && state == MOVING)
 	{
 		IRadjustment = (kPir2 * (goal_right - right));
 	}
@@ -122,7 +122,7 @@ void PDController() {
 
 	adjusted_angle = goal_angle + IRadjustment;
 
-	if (state == TURNING) {
+	if (state == TURNING || state == FRONTING) {
 		adjusted_angle = goal_angle;
 	}
 
@@ -187,7 +187,7 @@ void updatePID() {
 	setMotorLPWM(left_PWM_value);
 	setMotorRPWM(right_PWM_value);
 
-	if((angle_error < 2 && angle_error > -2 && distance_error < 1.5 && distance_error > -1.5) || (state == FRONTING && distance_correction < 0.04 && distance_correction > -0.04))
+	if((angle_error < 2.5 && angle_error > -2.5 && distance_error < 2 && distance_error > -2) || (state == FRONTING && distance_correction < 0.1 && distance_correction > -0.1))
 		goal_reached_timer++;					// Increments goal reached timer when errors are within a certain threshold
 
 	else

@@ -6,8 +6,8 @@
 #include "irs.h"
 
 int16_t left_wall_threshold = 550;
-int16_t right_wall_threshold = 550;
-int16_t front_wall_threshold = 700;
+int16_t right_wall_threshold = 500;
+int16_t front_wall_threshold = 450;
 
 int16_t left_wall = 0;
 int16_t right_wall = 0;

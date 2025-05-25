@@ -55,12 +55,18 @@ void turn(int16_t degrees) {	// Make n 90 degree turns (no acceleration)
 
 void frontCorrection() {
 
+	int16_t left_temp = TIM3->CNT;
+	int16_t right_temp = TIM8->CNT;
+
 	setState(FRONTING);
 
 	while(!PIDdone())
 	{
 
 	}
+
+	TIM3->CNT = left_temp;
+	TIM8->CNT = right_temp;
 
 	resetPID();
 
