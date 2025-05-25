@@ -1,3 +1,3 @@
 ../Core/Src/controller.c:14:6:move	16	static
-../Core/Src/controller.c:31:6:turn	16	static
-../Core/Src/controller.c:48:6:frontCorrection	4	static
+../Core/Src/controller.c:33:6:turn	16	static
+../Core/Src/controller.c:53:6:frontCorrection	8	static

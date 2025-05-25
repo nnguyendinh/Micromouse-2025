@@ -12,19 +12,19 @@
 #include "irs.h"
 
 // Constants
-const float kPw = 0.04;
-const float kDw = 0.03;
-const float kPx = 0.015;
-const float kDx = 0.015;
+float kPw = 0.02; // 0.04
+float kDw = 0.3;
+float kPx = 0.015;
+float kDx = 0.015;
 
-const float PWMMaxx = 0.25; // 0.65
-const float PWMMaxw = 0.1;	//0.35
+const float PWMMaxx = 0.3; // 0.65
+const float PWMMaxw = 0.16;	//0.35
 
-const float PWMMinx = 0.22;	// 0.32
-const float PWMMinw = 0.22;	// 0.32
-const float PWMMin = 0.21;	// 0.28
+const float PWMMinx = 0.25;	// 0.32
+const float PWMMinw = 0.25;	// 0.32
+const float PWMMin = 0.23;	// 0.28
 
-const float xacceleration = 0.001;
+const float xacceleration = 0.0005;
 
 
 // Goal Parameters
@@ -44,16 +44,22 @@ float distance_correction = 0;
 float old_distance_correction = 0;
 
 // IR Adjustments
-const float kPir = 0.001;		// 0.03	for 2 walls
-const float kPir2 = 0.003;		// 0.05 for 1 wall
+float kPir = 0.01;		// 0.03	for 2 walls
+float kPir2 = 0.015;		// 0.05 for 1 wall
 
 float IRadjustment = 0;
 
 int16_t IRAngleOffset = 0;
-int16_t goal_forward_left;
-int16_t goal_forward_right;
+int16_t goal_front_left;
+int16_t goal_front_right;
 int16_t goal_left;
 int16_t goal_right;
+
+float adjusted_angle;
+
+// Fronting
+const float front_kPx = 0.0003; // 0.3
+const float front_kPw = 0.35; // 0.2
 
 // Miscellaneous
 STATE state = REST;
@@ -78,8 +84,8 @@ void setState(STATE curr_state) {
 void setIRGoals(int16_t front_left_goal, int16_t front_right_goal, int16_t left_goal, int16_t right_goal) {
 
 	IRAngleOffset = left_goal - right_goal;
-	goal_forward_left = front_left_goal;
-	goal_forward_right = front_right_goal;
+	goal_front_left = front_left_goal;
+	goal_front_right = front_right_goal;
 	goal_left = left_goal;
 	goal_right = right_goal;
 
@@ -110,10 +116,14 @@ void PDController() {
 
 	setIRAngle(ir_left, ir_right);
 
-	float adjusted_angle = goal_angle + IRadjustment;
+	adjusted_angle = goal_angle + IRadjustment;
+
+	if (state == TURNING) {
+		adjusted_angle = goal_angle;
+	}
 
 	readGyro(&gyro_vel);
-	gyro_vel /= 1000;
+	gyro_vel /= 2000;
 	gyro_angle += gyro_vel;
 
 	angle_error = adjusted_angle - gyro_angle;
@@ -122,6 +132,10 @@ void PDController() {
 	distance_error = goal_distance - ((getLeftEncoderCounts() + getRightEncoderCounts()) / (2 * ENC_TO_MM));
 
 	distance_correction = kPx * distance_error + kDx * (distance_error - old_distance_error);
+
+	if (state == FRONTING) {
+		distance_correction = front_kPx * (goal_front_left - ir_front_left);
+	}
 
 /////////////////////////////////	APPLY ACCELERATION	///////////////////////////////
 
@@ -169,13 +183,15 @@ void updatePID() {
 	setMotorLPWM(left_PWM_value);
 	setMotorRPWM(right_PWM_value);
 
-	if(angle_error < 2 && angle_error > -2 && distance_error < 2 && distance_error > -2)
+	if((angle_error < 2 && angle_error > -2 && distance_error < 2 && distance_error > -2) || (state == FRONTING && distance_correction < 0.03 && distance_correction > -0.03))
 		goal_reached_timer++;					// Increments goal reached timer when errors are within a certain threshold
 
 	else
 		goal_reached_timer = 0;
 
 ///////////////////// UPDATE PREVIOUS ANGLE AND DISTANCE ERRORS //////////////////////////
+
+	old_angle_error = angle_error;
 
 	old_distance_correction = distance_correction;
 

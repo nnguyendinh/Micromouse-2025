@@ -82,6 +82,8 @@ uint32_t temp_left = 0;
 uint32_t temp_front_left = 0;
 uint32_t temp_front_right = 0;
 uint32_t temp_ir_right = 0;
+
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -237,11 +239,24 @@ int main(void)
 	}
 
 	if (B2 == GPIO_PIN_SET) {
-		solve(DEAD);
 		start = 1;
+//		turn(90);
+		move(180);
+		move(180);
+		move(180);
+		move(180);
+		turn(90);
+		turn(90);
+		move(180);
+		move(180);
+		move(180);
+		move(180);
+		turn(-90);
+		turn(-90);
 	}
 
 	if (start) {
+//		solve(DEAD);
 
 	}
 
@@ -551,7 +566,7 @@ static void MX_TIM7_Init(void)
   htim7.Instance = TIM7;
   htim7.Init.Prescaler = 59;
   htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim7.Init.Period = 999;
+  htim7.Init.Period = 499;
   htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim7) != HAL_OK)
   {

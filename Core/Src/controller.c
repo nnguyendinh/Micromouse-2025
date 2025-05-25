@@ -15,8 +15,10 @@ void move(int16_t mm) {	// Make n 90 degree turns (no acceleration)
 
 
 	resetPID();
-	setPIDGoalD(mm);
+	setPIDGoalD(mm * 0.97);
 	setPIDGoalA(0);
+
+	setState(MOVING);
 
 	while(!PIDdone())
 	{
@@ -32,8 +34,11 @@ void turn(int16_t degrees) {	// Make n 90 degree turns (no acceleration)
 
 
 	resetPID();
+
+	setState(TURNING);
+
 	setPIDGoalD(0);
-	setPIDGoalA(degrees);
+	setPIDGoalA(0.99 * degrees);
 
 	while(!PIDdone())
 	{
@@ -47,43 +52,16 @@ void turn(int16_t degrees) {	// Make n 90 degree turns (no acceleration)
 
 void frontCorrection() {
 
-//	int16_t forward_left = 0;
-//	int16_t forward_right = 0;
-//
-//	while(1) {
-////		if (fabs(forward_left - goal_forward_left) > 200 && fabs(forward_right - goal_forward_right) > 200) {
-////			if (forward_left - goal_forward_left < -250 || forward_right - goal_forward_right < -250) {
-////				moveEncoderCount(15);
-////			}
-////			else if (forward_left - goal_forward_left > 150 || forward_right - goal_forward_right > 150) {
-////				moveEncoderCount(-15);
-////			}
-////			if ((forward_left - goal_forward_left) - (forward_right - goal_forward_right) < -300) {
-////				turnEncoderCount(30);
-////			}
-////			else if ((forward_left - goal_forward_left) - (forward_right - goal_forward_right) < -300) {
-////				turnEncoderCount(-30);
-////			}
-////		}
-//		if (forward_left - goal_forward_left > 250/* || forward_right - goal_forward_right > 300*/) {
-//			moveEncoderCount(-15);
-//
-////			if ((forward_left - goal_forward_left) - (forward_right - goal_forward_right) < -300) {
-////				turnEncoderCount(30);
-////			}
-////			else if ((forward_left - goal_forward_left) - (forward_right - goal_forward_right) < -300) {
-////				turnEncoderCount(-30);
-////			}
-//		}
-//		else if (forward_left - goal_forward_left < -250/* || forward_right - goal_forward_right > 300*/) {
-//			moveEncoderCount(15);
-//		}
-//		else {
-//			break;
-//		}
-//	}
-//
-//	resetPID();
+	setState(FRONTING);
+
+	while(!PIDdone())
+	{
+
+	}
+
+	resetPID();
+
+
 
 }
 
